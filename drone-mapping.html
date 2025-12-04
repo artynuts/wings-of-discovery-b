@@ -60,6 +60,16 @@
         background: #ccc;
         cursor: not-allowed;
       }
+      #deletePointBtn {
+        background: #e74c3c;
+      }
+      #deletePointBtn:hover:not(:disabled) {
+        background: #c0392b;
+      }
+      #deletePointBtn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
       .code-modal {
         display: none;
         position: fixed;
@@ -186,12 +196,14 @@
               <button id="findPathBtn">🎯 Find Path</button>
               <button id="clearBtn">🗑️ Clear</button>
               <button id="undoBtn">↶ Undo</button>
+              <button id="deletePointBtn" disabled>❌ Delete Point</button>
               <button id="exportBtn">📥 Export to Drone Blocks</button>
             </div>
             <div
               style="margin-top: 8px; font-size: 0.85rem; color: var(--muted)"
             >
-              Click on canvas to add points. Lines connect automatically.
+              Click on canvas to add points. Click a point to select it, then
+              click "Delete Point". Right-click a point to delete it.
             </div>
           </div>
 
@@ -328,6 +340,7 @@
       const clearBtn = document.getElementById("clearBtn");
       const undoBtn = document.getElementById("undoBtn");
       const exportBtn = document.getElementById("exportBtn");
+      const deletePointBtn = document.getElementById("deletePointBtn");
       const pointCountEl = document.getElementById("pointCount");
       const rectWidthEl = document.getElementById("rectWidth");
       const rectHeightEl = document.getElementById("rectHeight");
@@ -341,6 +354,7 @@
       let showPath = false;
       let boundingRect = null;
       let flightPaths = [];
+      let selectedPointIndex = -1;
 
       // Update flight paths when scale or spacing changes
       pixelScaleInput.addEventListener("change", () => {
@@ -400,6 +414,49 @@
         draggingPointIndex = -1;
       });
 
+      // Point selection
+      canvas.addEventListener("click", (e) => {
+        if (showPath) return; // Don't select points after path is shown
+        if (draggingPointIndex >= 0) return; // Don't select if we just dragged
+
+        const pos = getMousePos(e);
+        selectedPointIndex = -1;
+
+        // Check if clicked on a point
+        for (let i = 0; i < points.length; i++) {
+          const dist = Math.sqrt(
+            Math.pow(pos.x - points[i].x, 2) + Math.pow(pos.y - points[i].y, 2)
+          );
+          if (dist < 10) {
+            selectedPointIndex = i;
+            break;
+          }
+        }
+
+        // Update UI
+        if (selectedPointIndex >= 0) {
+          deletePointBtn.disabled = false;
+          deletePointBtn.textContent = `Delete Point ${selectedPointIndex + 1}`;
+        } else {
+          deletePointBtn.disabled = true;
+          deletePointBtn.textContent = "Delete Point";
+        }
+
+        redraw();
+      });
+
+      // Delete point button
+      deletePointBtn.addEventListener("click", () => {
+        if (selectedPointIndex >= 0 && selectedPointIndex < points.length) {
+          points.splice(selectedPointIndex, 1);
+          selectedPointIndex = -1;
+          deletePointBtn.disabled = true;
+          deletePointBtn.textContent = "Delete Point";
+          pointCountEl.textContent = points.length;
+          redraw();
+        }
+      });
+
       // Resize canvas to fit container
       function resizeCanvas() {
         const rect = canvas.parentElement.getBoundingClientRect();
@@ -440,6 +497,14 @@
 
           // Draw points
           points.forEach((p, i) => {
+            // Highlight selected point
+            if (i === selectedPointIndex) {
+              ctx.fillStyle = "#2ecc71";
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
             ctx.fillStyle = "#ff6b6b";
             ctx.beginPath();
             ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
