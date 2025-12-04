@@ -140,9 +140,10 @@
               <input
                 type="number"
                 id="pixelScale"
-                min="5"
-                max="100"
-                value="20"
+                min="0.1"
+                max="20"
+                step="0.1"
+                value="0.25"
                 style="
                   width: 60px;
                   padding: 4px;
@@ -150,7 +151,7 @@
                   border-radius: 3px;
                 "
               />
-              px/ft
+              ft/px
             </div>
 
             <div class="legend">
@@ -343,11 +344,11 @@
         };
       }
 
-      // Calculate flight paths (5 feet = user-defined pixel scale)
+      // Calculate flight paths (spacing based on feet per pixel scale)
       function calculateFlightPaths() {
         if (!boundingRect) return [];
-        const pixelScale = parseFloat(pixelScaleInput.value) || 20;
-        const spacing = pixelScale; // User-defined pixels per foot
+        const feetPerPixel = parseFloat(pixelScaleInput.value) || 0.25;
+        const spacing = 5 / feetPerPixel; // 5 feet spacing converted to pixels
         const paths = [];
         for (
           let y = boundingRect.y + spacing;
