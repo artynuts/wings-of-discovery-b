@@ -431,14 +431,27 @@
 
         // Calculate total distance of all flight paths
         let totalDistance = 0;
-        flightPaths.forEach((path) => {
+        flightPaths.forEach((path, idx) => {
           const pathLengthPx = Math.abs(path.x2 - path.x1);
           const pathLengthFt = pathLengthPx * feetPerPixel;
           totalDistance += pathLengthFt;
+
+          // Add turning distance between paths (accounts for drone turning at end of each path)
+          if (idx < flightPaths.length - 1) {
+            const nextPath = flightPaths[idx + 1];
+            const verticalDistPx = Math.abs(nextPath.y1 - path.y1);
+            const verticalDistFt = verticalDistPx * feetPerPixel;
+            totalDistance += verticalDistFt; // Add vertical distance for the turn
+          }
         });
 
+        // Add overhead time for acceleration, deceleration, and image capture (~20% overhead)
+        const overheadMultiplier = 1.2;
+        const totalDistanceWithOverhead = totalDistance * overheadMultiplier;
+
         // Calculate flight time in seconds, then convert to minutes
-        const flightTimeSeconds = totalDistance / droneSpeedFtPerSec;
+        const flightTimeSeconds =
+          totalDistanceWithOverhead / droneSpeedFtPerSec;
         const flightTimeMinutes =
           Math.round((flightTimeSeconds / 60) * 10) / 10; // Round to 1 decimal
 
