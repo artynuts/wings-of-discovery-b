@@ -455,8 +455,7 @@
         const flightTimeMinutes =
           Math.round((flightTimeSeconds / 60) * 10) / 10; // Round to 1 decimal
 
-        flightTimeEl.textContent =
-          flightTimeMinutes < 1 ? "< 1" : flightTimeMinutes.toFixed(1);
+        flightTimeEl.textContent = flightTimeMinutes.toFixed(1);
       }
 
       // Canvas click
