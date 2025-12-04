@@ -135,6 +135,23 @@
               <strong>Flight Paths:</strong> <span id="pathCount">0</span>
             </div>
             <div class="info-item"><strong>Spacing:</strong> 5 feet apart</div>
+            <div class="info-item">
+              <strong>Pixel Scale:</strong>
+              <input
+                type="number"
+                id="pixelScale"
+                min="5"
+                max="100"
+                value="20"
+                style="
+                  width: 60px;
+                  padding: 4px;
+                  border: 1px solid #ddd;
+                  border-radius: 3px;
+                "
+              />
+              px/ft
+            </div>
 
             <div class="legend">
               <strong>Legend:</strong>
@@ -188,11 +205,21 @@
       const rectWidthEl = document.getElementById("rectWidth");
       const rectHeightEl = document.getElementById("rectHeight");
       const pathCountEl = document.getElementById("pathCount");
+      const pixelScaleInput = document.getElementById("pixelScale");
 
       let points = [];
       let showPath = false;
       let boundingRect = null;
       let flightPaths = [];
+
+      // Update flight paths when scale changes
+      pixelScaleInput.addEventListener("change", () => {
+        if (showPath && boundingRect) {
+          flightPaths = calculateFlightPaths();
+          pathCountEl.textContent = flightPaths.length;
+          redraw();
+        }
+      });
 
       // Resize canvas to fit container
       function resizeCanvas() {
@@ -316,10 +343,11 @@
         };
       }
 
-      // Calculate flight paths (5 feet = 20px scale)
+      // Calculate flight paths (5 feet = user-defined pixel scale)
       function calculateFlightPaths() {
         if (!boundingRect) return [];
-        const spacing = 20; // Represents 5 feet
+        const pixelScale = parseFloat(pixelScaleInput.value) || 20;
+        const spacing = pixelScale; // User-defined pixels per foot
         const paths = [];
         for (
           let y = boundingRect.y + spacing;
