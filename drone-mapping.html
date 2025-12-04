@@ -5,10 +5,88 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Drone Mapping — Wings Of Discovery</title>
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .planner-container {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .canvas-section {
+        flex: 1;
+        min-width: 300px;
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: 0 6px 18px rgba(20, 30, 60, 0.04);
+      }
+      canvas {
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        display: block;
+        width: 100%;
+        max-width: 600px;
+        cursor: crosshair;
+        background: #fafbfc;
+      }
+      .controls {
+        margin-top: 12px;
+      }
+      button {
+        padding: 8px 14px;
+        margin: 4px 4px 4px 0;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      button:hover {
+        background: #1a5cbf;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .info-section {
+        flex: 1;
+        min-width: 280px;
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: 0 6px 18px rgba(20, 30, 60, 0.04);
+      }
+      .info-section h3 {
+        margin-top: 0;
+      }
+      .info-item {
+        margin: 10px 0;
+        padding: 10px;
+        background: #f5f9ff;
+        border-radius: 4px;
+      }
+      .legend {
+        margin-top: 16px;
+        font-size: 0.9rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 6px 0;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        margin-right: 8px;
+      }
+    </style>
   </head>
   <body>
     <header class="site-header small">
-      <h1>Drone Mapping</h1>
+      <h1>🚁 Drone Mapping</h1>
       <nav class="main-nav">
         <a href="index.html">🏠 Home</a>
         <a href="ai-image-detecting.html">🧠 AI Image Detecting</a>
@@ -18,51 +96,80 @@
 
     <main class="container">
       <article>
-        <h2>What is drone mapping?</h2>
+        <h2>Interactive Drone Path Planner</h2>
         <p>
-          Drone mapping means using a small flying drone to take lots of
-          pictures of a place and then turning those pictures into a map or 3D
-          view. It helps people see places from above.
+          Draw a polygon on the canvas to show the area you want to map. Click
+          "Find Path" to see the smallest rectangle that fits and the drone
+          flight paths spaced 5 feet apart.
         </p>
 
-        <h3>How we learn about it</h3>
+        <div class="planner-container">
+          <div class="canvas-section">
+            <h3>Draw Area</h3>
+            <canvas id="canvas"></canvas>
+            <div class="controls">
+              <button id="findPathBtn">🎯 Find Path</button>
+              <button id="clearBtn">🗑️ Clear</button>
+              <button id="undoBtn">↶ Undo</button>
+            </div>
+            <div
+              style="margin-top: 8px; font-size: 0.85rem; color: var(--muted)"
+            >
+              Click on canvas to add points. Lines connect automatically.
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h3>Flight Info</h3>
+            <div class="info-item">
+              <strong>Polygon Points:</strong> <span id="pointCount">0</span>
+            </div>
+            <div class="info-item">
+              <strong>Rectangle Width:</strong> <span id="rectWidth">—</span> px
+            </div>
+            <div class="info-item">
+              <strong>Rectangle Height:</strong>
+              <span id="rectHeight">—</span> px
+            </div>
+            <div class="info-item">
+              <strong>Flight Paths:</strong> <span id="pathCount">0</span>
+            </div>
+            <div class="info-item"><strong>Spacing:</strong> 5 feet apart</div>
+
+            <div class="legend">
+              <strong>Legend:</strong>
+              <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b"></div>
+                Polygon (your area)
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: #4ecdc4"></div>
+                Bounding rectangle
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background: #95e1d3"></div>
+                Flight paths
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 32px">How Drone Mapping Works</h3>
+        <p>
+          Drone mapping uses a small flying drone to take many overlapping
+          pictures of an area from above. These pictures are then combined using
+          software to create a map or 3D model. It's useful for:
+        </p>
         <ul>
-          <li>Plan a safe flight area (parks or open spaces).</li>
-          <li>Fly the drone slowly and take many pictures.</li>
-          <li>Use software (on a computer) to join the pictures into a map.</li>
+          <li>Surveying land before building projects</li>
+          <li>Creating maps of parks or gardens</li>
+          <li>Measuring areas or tracking changes over time</li>
+          <li>Inspecting roofs or tall structures safely</li>
         </ul>
 
-        <h3>Fun ideas</h3>
-        <p>
-          Compare two maps from different days, look for changes, or make a
-          colourful map to show to friends.
-        </p>
-
-        <h3>Try the Path Planner</h3>
-        <p>
-          Use our interactive tool to draw a mapping area and see how a drone
-          should fly to cover it all. The tool shows the smallest rectangle that
-          fits your area and marks flight paths spaced 5 feet apart.
-        </p>
-        <p>
-          <a
-            href="drone-path-planner.html"
-            style="
-              display: inline-block;
-              padding: 10px 16px;
-              background: #2b7aee;
-              color: white;
-              text-decoration: none;
-              border-radius: 4px;
-              margin-top: 8px;
-            "
-          >
-            🎯 Open Path Planner
-          </a>
-        </p>
-
         <p class="note">
-          Note: Always follow local rules and fly with a grown-up.
+          ✈️ <strong>Safety First:</strong> Always follow local rules, fly in
+          safe open areas, and have a grown-up supervise!
         </p>
       </article>
     </main>
@@ -70,5 +177,209 @@
     <footer class="site-footer">
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const findPathBtn = document.getElementById("findPathBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const undoBtn = document.getElementById("undoBtn");
+      const pointCountEl = document.getElementById("pointCount");
+      const rectWidthEl = document.getElementById("rectWidth");
+      const rectHeightEl = document.getElementById("rectHeight");
+      const pathCountEl = document.getElementById("pathCount");
+
+      let points = [];
+      let showPath = false;
+      let boundingRect = null;
+      let flightPaths = [];
+
+      // Resize canvas to fit container
+      function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.min(600, rect.width - 32);
+        canvas.height = 500;
+        redraw();
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      // Get mouse position relative to canvas
+      function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        };
+      }
+
+      // Draw everything
+      function redraw() {
+        ctx.fillStyle = "#fafbfc";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw polygon
+        if (points.length > 0) {
+          ctx.strokeStyle = "#ff6b6b";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
+          }
+          if (points.length > 2) {
+            ctx.lineTo(points[0].x, points[0].y);
+          }
+          ctx.stroke();
+
+          // Draw points
+          points.forEach((p, i) => {
+            ctx.fillStyle = "#ff6b6b";
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#333";
+            ctx.font = "bold 10px Arial";
+            ctx.fillText(i + 1, p.x + 8, p.y - 8);
+          });
+        }
+
+        // Draw bounding rectangle and paths
+        if (showPath && boundingRect) {
+          // Draw rectangle
+          ctx.strokeStyle = "#4ecdc4";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(
+            boundingRect.x,
+            boundingRect.y,
+            boundingRect.w,
+            boundingRect.h
+          );
+
+          // Draw flight paths
+          ctx.strokeStyle = "#95e1d3";
+          ctx.lineWidth = 2;
+          flightPaths.forEach((path) => {
+            ctx.beginPath();
+            ctx.moveTo(path.x1, path.y1);
+            ctx.lineTo(path.x2, path.y2);
+            ctx.stroke();
+          });
+
+          // Draw path direction arrows
+          ctx.fillStyle = "#95e1d3";
+          flightPaths.forEach((path, idx) => {
+            const midX = (path.x1 + path.x2) / 2;
+            const midY = (path.y1 + path.y2) / 2;
+            const arrowSize = 6;
+            if (idx % 2 === 0) {
+              // Arrow pointing right
+              ctx.beginPath();
+              ctx.moveTo(midX, midY);
+              ctx.lineTo(midX - arrowSize, midY - arrowSize / 2);
+              ctx.lineTo(midX - arrowSize, midY + arrowSize / 2);
+              ctx.closePath();
+            } else {
+              // Arrow pointing left
+              ctx.beginPath();
+              ctx.moveTo(midX, midY);
+              ctx.lineTo(midX + arrowSize, midY - arrowSize / 2);
+              ctx.lineTo(midX + arrowSize, midY + arrowSize / 2);
+              ctx.closePath();
+            }
+            ctx.fill();
+          });
+        }
+      }
+
+      // Calculate bounding rectangle
+      function calculateBoundingRect() {
+        if (points.length < 3) return null;
+
+        let minX = points[0].x;
+        let maxX = points[0].x;
+        let minY = points[0].y;
+        let maxY = points[0].y;
+
+        points.forEach((p) => {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y);
+        });
+
+        return {
+          x: minX,
+          y: minY,
+          w: maxX - minX,
+          h: maxY - minY,
+        };
+      }
+
+      // Calculate flight paths (5 feet = 20px scale)
+      function calculateFlightPaths() {
+        if (!boundingRect) return [];
+        const spacing = 20; // Represents 5 feet
+        const paths = [];
+        for (
+          let y = boundingRect.y + spacing;
+          y < boundingRect.y + boundingRect.h;
+          y += spacing
+        ) {
+          const x1 = boundingRect.x;
+          const x2 = boundingRect.x + boundingRect.w;
+          paths.push({ x1, y1: y, x2, y2: y });
+        }
+        return paths;
+      }
+
+      // Canvas click
+      canvas.addEventListener("click", (e) => {
+        if (showPath) return; // Don't add points after path is shown
+        const pos = getMousePos(e);
+        points.push(pos);
+        pointCountEl.textContent = points.length;
+        redraw();
+      });
+
+      // Find path
+      findPathBtn.addEventListener("click", () => {
+        if (points.length < 3) {
+          alert("Please draw at least 3 points to form a polygon.");
+          return;
+        }
+        showPath = true;
+        boundingRect = calculateBoundingRect();
+        flightPaths = calculateFlightPaths();
+        rectWidthEl.textContent = Math.round(boundingRect.w) + " px";
+        rectHeightEl.textContent = Math.round(boundingRect.h) + " px";
+        pathCountEl.textContent = flightPaths.length;
+        findPathBtn.disabled = true;
+        redraw();
+      });
+
+      // Clear
+      clearBtn.addEventListener("click", () => {
+        points = [];
+        showPath = false;
+        boundingRect = null;
+        flightPaths = [];
+        pointCountEl.textContent = "0";
+        rectWidthEl.textContent = "—";
+        rectHeightEl.textContent = "—";
+        pathCountEl.textContent = "0";
+        findPathBtn.disabled = false;
+        redraw();
+      });
+
+      // Undo
+      undoBtn.addEventListener("click", () => {
+        if (points.length > 0) {
+          points.pop();
+          pointCountEl.textContent = points.length;
+          redraw();
+        }
+      });
+    </script>
   </body>
 </html>
