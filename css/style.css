@@ -1,0 +1,99 @@
+:root {
+  --bg: #f7fbff;
+  --card: #ffffff;
+  --accent: #2b7aee;
+  --muted: #555;
+  --radius: 10px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: Segoe UI, Arial, sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: #222;
+  line-height: 1.4;
+}
+.site-header {
+  background: linear-gradient(90deg, #ffffff88, var(--accent));
+  padding: 18px 20px;
+  text-align: center;
+}
+.site-header.small {
+  padding: 12px 16px;
+}
+.site-header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+.tag {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+.main-nav {
+  margin-top: 10px;
+}
+.main-nav a {
+  margin: 0 8px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+.hero {
+  background: var(--card);
+  padding: 18px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(20, 30, 60, 0.06);
+}
+.cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.card {
+  flex: 1 1 140px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #fff, #f1f7ff);
+  border-radius: 8px;
+  color: var(--accent);
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+}
+.how-to {
+  margin-top: 18px;
+}
+.site-footer {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+article {
+  background: var(--card);
+  padding: 18px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(20, 30, 60, 0.04);
+}
+h2 {
+  margin-top: 0;
+}
+.note {
+  background: #fff8d6;
+  padding: 8px;
+  border-left: 4px solid #ffd24d;
+}
+@media (max-width: 560px) {
+  .cards {
+    flex-direction: column;
+  }
+  .main-nav a {
+    display: inline-block;
+    margin: 6px 6px;
+  }
+}
