@@ -169,6 +169,27 @@
               />
               ft/px
             </div>
+            <div class="info-item">
+              <strong>Drone Speed:</strong>
+              <input
+                type="number"
+                id="droneSpeed"
+                min="5"
+                max="100"
+                value="25"
+                style="
+                  width: 60px;
+                  padding: 4px;
+                  border: 1px solid #ddd;
+                  border-radius: 3px;
+                "
+              />
+              mph
+            </div>
+            <div class="info-item">
+              <strong>Flight Time:</strong>
+              <span id="flightTime">—</span> minutes
+            </div>
 
             <div class="legend">
               <strong>Legend:</strong>
@@ -224,6 +245,8 @@
       const pathCountEl = document.getElementById("pathCount");
       const pixelScaleInput = document.getElementById("pixelScale");
       const pathSpacingInput = document.getElementById("pathSpacing");
+      const droneSpeedInput = document.getElementById("droneSpeed");
+      const flightTimeEl = document.getElementById("flightTime");
 
       let points = [];
       let showPath = false;
@@ -243,7 +266,14 @@
         if (showPath && boundingRect) {
           flightPaths = calculateFlightPaths();
           pathCountEl.textContent = flightPaths.length;
+          updateFlightTime();
           redraw();
+        }
+      });
+
+      droneSpeedInput.addEventListener("change", () => {
+        if (showPath) {
+          updateFlightTime();
         }
       });
 
@@ -388,6 +418,34 @@
         return paths;
       }
 
+      // Calculate flight time
+      function updateFlightTime() {
+        if (!flightPaths || flightPaths.length === 0) {
+          flightTimeEl.textContent = "—";
+          return;
+        }
+
+        const feetPerPixel = parseFloat(pixelScaleInput.value) || 0.25;
+        const droneSpeedMph = parseFloat(droneSpeedInput.value) || 25;
+        const droneSpeedFtPerSec = (droneSpeedMph * 5280) / 3600; // Convert mph to ft/sec
+
+        // Calculate total distance of all flight paths
+        let totalDistance = 0;
+        flightPaths.forEach((path) => {
+          const pathLengthPx = Math.abs(path.x2 - path.x1);
+          const pathLengthFt = pathLengthPx * feetPerPixel;
+          totalDistance += pathLengthFt;
+        });
+
+        // Calculate flight time in seconds, then convert to minutes
+        const flightTimeSeconds = totalDistance / droneSpeedFtPerSec;
+        const flightTimeMinutes =
+          Math.round((flightTimeSeconds / 60) * 10) / 10; // Round to 1 decimal
+
+        flightTimeEl.textContent =
+          flightTimeMinutes < 1 ? "< 1" : flightTimeMinutes.toFixed(1);
+      }
+
       // Canvas click
       canvas.addEventListener("click", (e) => {
         if (showPath) return; // Don't add points after path is shown
@@ -409,6 +467,7 @@
         rectWidthEl.textContent = Math.round(boundingRect.w) + " px";
         rectHeightEl.textContent = Math.round(boundingRect.h) + " px";
         pathCountEl.textContent = flightPaths.length;
+        updateFlightTime();
         findPathBtn.disabled = true;
         redraw();
       });
@@ -423,6 +482,7 @@
         rectWidthEl.textContent = "—";
         rectHeightEl.textContent = "—";
         pathCountEl.textContent = "0";
+        flightTimeEl.textContent = "—";
         findPathBtn.disabled = false;
         redraw();
       });
