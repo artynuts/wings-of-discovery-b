@@ -449,10 +449,24 @@
       deletePointBtn.addEventListener("click", () => {
         if (selectedPointIndex >= 0 && selectedPointIndex < points.length) {
           points.splice(selectedPointIndex, 1);
-          selectedPointIndex = -1;
-          deletePointBtn.disabled = true;
-          deletePointBtn.textContent = "Delete Point";
           pointCountEl.textContent = points.length;
+
+          // Auto-select the next point (or previous if we deleted the last one)
+          if (points.length > 0) {
+            selectedPointIndex = Math.min(
+              selectedPointIndex,
+              points.length - 1
+            );
+            deletePointBtn.disabled = false;
+            deletePointBtn.textContent = `Delete Point ${
+              selectedPointIndex + 1
+            }`;
+          } else {
+            selectedPointIndex = -1;
+            deletePointBtn.disabled = true;
+            deletePointBtn.textContent = "Delete Point";
+          }
+
           redraw();
         }
       });
