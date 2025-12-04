@@ -134,7 +134,23 @@
             <div class="info-item">
               <strong>Flight Paths:</strong> <span id="pathCount">0</span>
             </div>
-            <div class="info-item"><strong>Spacing:</strong> 5 feet apart</div>
+            <div class="info-item">
+              <strong>Path Spacing:</strong>
+              <input
+                type="number"
+                id="pathSpacing"
+                min="1"
+                max="50"
+                value="5"
+                style="
+                  width: 60px;
+                  padding: 4px;
+                  border: 1px solid #ddd;
+                  border-radius: 3px;
+                "
+              />
+              feet
+            </div>
             <div class="info-item">
               <strong>Pixel Scale:</strong>
               <input
@@ -207,14 +223,23 @@
       const rectHeightEl = document.getElementById("rectHeight");
       const pathCountEl = document.getElementById("pathCount");
       const pixelScaleInput = document.getElementById("pixelScale");
+      const pathSpacingInput = document.getElementById("pathSpacing");
 
       let points = [];
       let showPath = false;
       let boundingRect = null;
       let flightPaths = [];
 
-      // Update flight paths when scale changes
+      // Update flight paths when scale or spacing changes
       pixelScaleInput.addEventListener("change", () => {
+        if (showPath && boundingRect) {
+          flightPaths = calculateFlightPaths();
+          pathCountEl.textContent = flightPaths.length;
+          redraw();
+        }
+      });
+
+      pathSpacingInput.addEventListener("change", () => {
         if (showPath && boundingRect) {
           flightPaths = calculateFlightPaths();
           pathCountEl.textContent = flightPaths.length;
@@ -348,7 +373,8 @@
       function calculateFlightPaths() {
         if (!boundingRect) return [];
         const feetPerPixel = parseFloat(pixelScaleInput.value) || 0.25;
-        const spacing = 5 / feetPerPixel; // 5 feet spacing converted to pixels
+        const pathSpacingFeet = parseFloat(pathSpacingInput.value) || 5;
+        const spacing = pathSpacingFeet / feetPerPixel; // Convert feet spacing to pixels
         const paths = [];
         for (
           let y = boundingRect.y + spacing;
