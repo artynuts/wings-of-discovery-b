@@ -596,12 +596,29 @@
         flightTimeEl.textContent = flightTimeMinutes.toFixed(1);
       }
 
-      // Canvas click
+      // Canvas click - only add point if we didn't drag
       canvas.addEventListener("click", (e) => {
         if (showPath) return; // Don't add points after path is shown
+        if (draggingPointIndex >= 0) return; // Don't add point if we were dragging
         const pos = getMousePos(e);
-        points.push(pos);
-        pointCountEl.textContent = points.length;
+
+        // Check if clicking on an existing point
+        let clickedPoint = false;
+        for (let i = 0; i < points.length; i++) {
+          const dist = Math.sqrt(
+            Math.pow(pos.x - points[i].x, 2) + Math.pow(pos.y - points[i].y, 2)
+          );
+          if (dist < 10) {
+            clickedPoint = true;
+            break;
+          }
+        }
+
+        // Only add new point if not clicking on existing point
+        if (!clickedPoint) {
+          points.push(pos);
+          pointCountEl.textContent = points.length;
+        }
         redraw();
       });
 
