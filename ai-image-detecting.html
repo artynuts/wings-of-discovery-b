@@ -332,12 +332,31 @@
               background: white;
               border-radius: 5px;
               border-left: 4px solid #3498db;
+              display: flex;
+              gap: 20px;
+              align-items: flex-start;
             `;
+
+            // Image thumbnail
+            const imageThumb = document.createElement("img");
+            imageThumb.src = imageData.data;
+            imageThumb.style.cssText = `
+              width: 120px;
+              height: 120px;
+              object-fit: cover;
+              border-radius: 5px;
+              flex-shrink: 0;
+            `;
+            resultDiv.appendChild(imageThumb);
+
+            // Content container for title and predictions
+            const contentDiv = document.createElement("div");
+            contentDiv.style.flex = "1";
 
             const title = document.createElement("h4");
             title.textContent = imageData.name;
             title.style.margin = "0 0 10px 0";
-            resultDiv.appendChild(title);
+            contentDiv.appendChild(title);
 
             const predictionsDiv = document.createElement("div");
             // predictions is an array of objects with 'className' and 'probability'
@@ -365,7 +384,8 @@
 
             // Only add result if something was detected
             if (foundDetections) {
-              resultDiv.appendChild(predictionsDiv);
+              contentDiv.appendChild(predictionsDiv);
+              resultDiv.appendChild(contentDiv);
               resultsList.appendChild(resultDiv);
             }
           }
