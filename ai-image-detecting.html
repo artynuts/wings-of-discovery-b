@@ -156,10 +156,8 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
-    <script
-      async
-      src="https://teachablemachine.withgoogle.com/tfjs/v1"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -284,15 +282,17 @@
         resultsContainer.style.display = "none";
 
         try {
-          // Check if Teachable Machine is loaded
+          // Wait for Teachable Machine library to load
+          let retries = 0;
+          while (typeof tmImage === "undefined" && retries < 10) {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            retries++;
+          }
+
           if (typeof tmImage === "undefined") {
-            // Fallback: wait a moment and try again
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            if (typeof tmImage === "undefined") {
-              throw new Error(
-                "Teachable Machine library failed to load. Please refresh the page."
-              );
-            }
+            throw new Error(
+              "Teachable Machine library failed to load. Please refresh the page and try again."
+            );
           }
 
           // Load the model from Teachable Machine
