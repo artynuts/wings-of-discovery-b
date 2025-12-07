@@ -97,6 +97,20 @@
         <p>Analyze your selected images with our Teachable Machine model:</p>
 
         <div
+          id="modelStatus"
+          style="
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            color: #856404;
+          "
+        >
+          📦 Loading AI model...
+        </div>
+
+        <div
           style="
             margin: 20px 0;
             padding: 20px;
@@ -156,8 +170,11 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+    <script src="https://www.gstatic.com/ml/tfjs/tfjs-core/4.11.0/tf-core.min.js"></script>
+    <script src="https://www.gstatic.com/ml/tfjs/tfjs-backend-webgl/4.11.0/tf-backend-webgl.min.js"></script>
+    <script src="https://www.gstatic.com/ml/tfjs/tfjs-converter/4.11.0/tf-converter.min.js"></script>
+    <script src="https://www.gstatic.com/ml/tfjs/tfjs-layers/4.11.0/tf-layers.min.js"></script>
+    <script src="https://www.gstatic.com/ml/teachablemachine/teachablemachine.min.js"></script>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -168,11 +185,57 @@
       const trainingStatus = document.getElementById("trainingStatus");
       const resultsContainer = document.getElementById("resultsContainer");
       const resultsList = document.getElementById("resultsList");
+      const modelStatus = document.getElementById("modelStatus");
 
       let selectedImages = [];
       let model = null;
       const DEFAULT_MODEL_URL =
         "https://teachablemachine.withgoogle.com/models/XUrRWk4EQ/";
+
+      // Preload model on page load
+      async function preloadModel() {
+        try {
+          // Wait for Teachable Machine library to load
+          let retries = 0;
+          while (typeof tm === "undefined" || !tm.ImageClassifier) {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+            retries++;
+            if (retries > 15) {
+              throw new Error(
+                "Teachable Machine library failed to load. Check your internet connection and refresh the page."
+              );
+            }
+          }
+
+          modelStatus.textContent = "🔄 Initializing AI model...";
+          modelStatus.style.backgroundColor = "#cce5ff";
+          modelStatus.style.borderLeftColor = "#004085";
+          modelStatus.style.color = "#004085";
+
+          // Load the model using the correct API
+          const URL = DEFAULT_MODEL_URL.endsWith("/")
+            ? DEFAULT_MODEL_URL
+            : DEFAULT_MODEL_URL + "/";
+
+          model = await tm.ImageClassifier.create(URL);
+
+          modelStatus.textContent =
+            "✅ AI model loaded successfully! You can now analyze images.";
+          modelStatus.style.backgroundColor = "#d4edda";
+          modelStatus.style.borderLeftColor = "#28a745";
+          modelStatus.style.color = "#155724";
+        } catch (error) {
+          modelStatus.textContent = `❌ Error loading AI model: ${error.message}`;
+          modelStatus.style.backgroundColor = "#f8d7da";
+          modelStatus.style.borderLeftColor = "#e74c3c";
+          modelStatus.style.color = "#721c24";
+          trainBtn.disabled = true;
+          console.error("Model loading error:", error);
+        }
+      }
+
+      // Preload model when page loads
+      window.addEventListener("load", preloadModel);
 
       // Trigger file input when button is clicked
       selectImagesBtn.addEventListener("click", () => {
@@ -278,35 +341,19 @@
           return;
         }
 
-        trainingStatus.textContent = "📦 Loading model...";
+        if (!model) {
+          trainingStatus.textContent =
+            "❌ AI model not ready. Please wait for it to load.";
+          trainingStatus.style.color = "#e74c3c";
+          return;
+        }
+
+        trainingStatus.textContent = "🔍 Classifying images...";
         trainingStatus.style.color = "#3498db";
         trainBtn.disabled = true;
         resultsContainer.style.display = "none";
 
         try {
-          // Wait for Teachable Machine library to load
-          let retries = 0;
-          while (typeof tmImage === "undefined" && retries < 10) {
-            await new Promise((resolve) => setTimeout(resolve, 200));
-            retries++;
-          }
-
-          if (typeof tmImage === "undefined") {
-            throw new Error(
-              "Teachable Machine library failed to load. Please refresh the page and try again."
-            );
-          }
-
-          // Load the model from Teachable Machine
-          const URL = DEFAULT_MODEL_URL.endsWith("/")
-            ? DEFAULT_MODEL_URL
-            : DEFAULT_MODEL_URL + "/";
-          const modelURL = URL + "model.json";
-          const metadataURL = URL + "metadata.json";
-
-          model = await tmImage.load(modelURL, metadataURL);
-
-          trainingStatus.textContent = "🔍 Classifying images...";
           resultsList.innerHTML = "";
 
           // Classify each image
@@ -338,10 +385,12 @@
             resultDiv.appendChild(title);
 
             const predictionsDiv = document.createElement("div");
+            // predictions is an array of objects with 'className' and 'probability'
             predictions.forEach((pred) => {
               const predLine = document.createElement("p");
               const confidence = (pred.probability * 100).toFixed(2);
-              predLine.textContent = `${pred.className}: ${confidence}%`;
+              const className = pred.className || "Unknown";
+              predLine.textContent = `${className}: ${confidence}%`;
               predLine.style.margin = "5px 0";
 
               // Color code based on confidence
