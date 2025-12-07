@@ -18,29 +18,7 @@
 
     <main class="container">
       <article>
-        <h2>What is AI image detecting?</h2>
-        <p>
-          AI image detecting means teaching a computer to look at a picture and
-          find things. For example, it can find trees, cars, or animals in
-          pictures.
-        </p>
-
-        <h3>Simple way to explore</h3>
-        <ol>
-          <li>
-            Collect pictures (with permission) of things you want to find.
-          </li>
-          <li>
-            Label the pictures (draw boxes or write what is in each picture).
-          </li>
-          <li>
-            Use kid-friendly tools or a teacher's help to train a model that
-            learns from the labels.
-          </li>
-        </ol>
-
-        <h3>Try it out!</h3>
-        <p>Select multiple images from your computer to explore:</p>
+        <h2>AI Image Detector</h2>
 
         <div
           style="
@@ -50,27 +28,22 @@
             border-radius: 8px;
           "
         >
-          <label
-            for="imageInput"
-            style="display: block; margin-bottom: 10px; cursor: pointer"
+          <button
+            type="button"
+            id="selectImagesBtn"
+            style="
+              padding: 10px 20px;
+              background-color: #3498db;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              font-size: 16px;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
           >
-            <button
-              type="button"
-              id="selectImagesBtn"
-              style="
-                padding: 10px 20px;
-                background-color: #3498db;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                font-size: 16px;
-                cursor: pointer;
-                transition: background-color 0.3s;
-              "
-            >
-              📁 Select Images
-            </button>
-          </label>
+            📁 Select Images
+          </button>
           <input
             type="file"
             id="imageInput"
@@ -92,9 +65,6 @@
             margin-top: 20px;
           "
         ></div>
-
-        <h3>Use Teachable Machine Model</h3>
-        <p>Analyze your selected images with our Teachable Machine model:</p>
 
         <div
           id="modelStatus"
@@ -133,7 +103,7 @@
               margin-right: 10px;
             "
           >
-            🤖 Analyze Selected Images
+            🤖 Analyze Images
           </button>
 
           <p id="trainingStatus" style="margin-top: 10px; color: #666"></p>
@@ -149,20 +119,9 @@
             display: none;
           "
         >
-          <h3>Training Results</h3>
+          <h3>Analysis Results</h3>
           <div id="resultsList"></div>
         </div>
-
-        <h3>Kid projects</h3>
-        <p>
-          Try making a project that finds playground equipment in photos or
-          counts how many bikes are in a picture.
-        </p>
-
-        <p class="note">
-          Tip: You can experiment with online demo tools, but always check with
-          an adult first.
-        </p>
       </article>
     </main>
 
