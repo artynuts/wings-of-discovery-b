@@ -156,8 +156,10 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+    <script
+      async
+      src="https://teachablemachine.withgoogle.com/tfjs/v1"
+    ></script>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -282,8 +284,21 @@
         resultsContainer.style.display = "none";
 
         try {
+          // Check if Teachable Machine is loaded
+          if (typeof tmImage === "undefined") {
+            // Fallback: wait a moment and try again
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            if (typeof tmImage === "undefined") {
+              throw new Error(
+                "Teachable Machine library failed to load. Please refresh the page."
+              );
+            }
+          }
+
           // Load the model from Teachable Machine
-          const URL = DEFAULT_MODEL_URL.endsWith("/") ? DEFAULT_MODEL_URL : DEFAULT_MODEL_URL + "/";
+          const URL = DEFAULT_MODEL_URL.endsWith("/")
+            ? DEFAULT_MODEL_URL
+            : DEFAULT_MODEL_URL + "/";
           const modelURL = URL + "model.json";
           const metadataURL = URL + "metadata.json";
 
@@ -296,14 +311,14 @@
           for (let i = 0; i < selectedImages.length; i++) {
             const imageData = selectedImages[i];
             const img = imageData.img;
-            
+
             // Wait for image to load if not already loaded
             if (!img.complete) {
               await new Promise((resolve) => {
                 img.onload = resolve;
               });
             }
-            
+
             const predictions = await model.predict(img);
 
             const resultDiv = document.createElement("div");
