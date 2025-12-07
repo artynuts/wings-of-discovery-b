@@ -341,25 +341,33 @@
 
             const predictionsDiv = document.createElement("div");
             // predictions is an array of objects with 'className' and 'probability'
+            let foundDetections = false;
             predictions.forEach((pred) => {
-              const predLine = document.createElement("p");
               const confidence = (pred.probability * 100).toFixed(2);
               const className = pred.className || "Unknown";
-              predLine.textContent = `${className}: ${confidence}%`;
-              predLine.style.margin = "5px 0";
 
-              // Color code based on confidence
-              let color = "#e74c3c";
-              if (confidence > 70) color = "#27ae60";
-              else if (confidence > 50) color = "#f39c12";
+              // Only show detections with confidence > 50%
+              if (confidence > 50) {
+                foundDetections = true;
+                const predLine = document.createElement("p");
+                predLine.textContent = `${className}: ${confidence}%`;
+                predLine.style.margin = "5px 0";
 
-              predLine.style.color = color;
-              predLine.style.fontWeight = "bold";
-              predictionsDiv.appendChild(predLine);
+                // Color code based on confidence
+                let color = "#f39c12";
+                if (confidence > 70) color = "#27ae60";
+
+                predLine.style.color = color;
+                predLine.style.fontWeight = "bold";
+                predictionsDiv.appendChild(predLine);
+              }
             });
 
-            resultDiv.appendChild(predictionsDiv);
-            resultsList.appendChild(resultDiv);
+            // Only add result if something was detected
+            if (foundDetections) {
+              resultDiv.appendChild(predictionsDiv);
+              resultsList.appendChild(resultDiv);
+            }
           }
 
           trainingStatus.textContent = "✅ Classification complete!";
