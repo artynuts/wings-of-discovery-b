@@ -93,6 +93,77 @@
           "
         ></div>
 
+        <h3>Use Teachable Machine Model</h3>
+        <p>Train your images with your custom Teachable Machine model:</p>
+
+        <div
+          style="
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+          "
+        >
+          <label
+            for="modelUrl"
+            style="display: block; margin-bottom: 10px; font-weight: bold"
+          >
+            Teachable Machine Model URL:
+          </label>
+          <input
+            type="text"
+            id="modelUrl"
+            placeholder="Paste your Teachable Machine model URL here"
+            style="
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #ddd;
+              border-radius: 5px;
+              box-sizing: border-box;
+              margin-bottom: 10px;
+              font-size: 14px;
+            "
+          />
+          <small style="color: #666; display: block; margin-bottom: 15px">
+            Example:
+            https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/
+          </small>
+
+          <button
+            id="trainBtn"
+            disabled
+            style="
+              padding: 10px 20px;
+              background-color: #27ae60;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              font-size: 16px;
+              cursor: pointer;
+              transition: background-color 0.3s;
+              margin-right: 10px;
+            "
+          >
+            🤖 Train Selected Images
+          </button>
+
+          <p id="trainingStatus" style="margin-top: 10px; color: #666"></p>
+        </div>
+
+        <div
+          id="resultsContainer"
+          style="
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            display: none;
+          "
+        >
+          <h3>Training Results</h3>
+          <div id="resultsList"></div>
+        </div>
+
         <h3>Kid projects</h3>
         <p>
           Try making a project that finds playground equipment in photos or
@@ -110,11 +181,22 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+
     <script>
       const imageInput = document.getElementById("imageInput");
       const selectImagesBtn = document.getElementById("selectImagesBtn");
       const imageGallery = document.getElementById("imageGallery");
       const imageCount = document.getElementById("imageCount");
+      const modelUrlInput = document.getElementById("modelUrl");
+      const trainBtn = document.getElementById("trainBtn");
+      const trainingStatus = document.getElementById("trainingStatus");
+      const resultsContainer = document.getElementById("resultsContainer");
+      const resultsList = document.getElementById("resultsList");
+
+      let selectedImages = [];
+      let model = null;
 
       // Trigger file input when button is clicked
       selectImagesBtn.addEventListener("click", () => {
@@ -128,6 +210,8 @@
         if (files.length === 0) {
           imageCount.textContent = "No images selected";
           imageGallery.innerHTML = "";
+          selectedImages = [];
+          trainBtn.disabled = true;
           return;
         }
 
@@ -135,11 +219,19 @@
           files.length !== 1 ? "s" : ""
         } selected`;
         imageGallery.innerHTML = "";
+        selectedImages = [];
+        trainBtn.disabled = !modelUrlInput.value.trim();
 
         files.forEach((file, index) => {
           const reader = new FileReader();
 
           reader.onload = (event) => {
+            selectedImages.push({
+              name: file.name,
+              data: event.target.result,
+              img: null,
+            });
+
             const imageDiv = document.createElement("div");
             imageDiv.style.cssText = `
               position: relative;
@@ -158,6 +250,8 @@
               object-fit: cover;
               display: block;
             `;
+
+            selectedImages[index].img = img;
 
             const label = document.createElement("div");
             label.textContent = file.name;
@@ -196,6 +290,96 @@
 
           reader.readAsDataURL(file);
         });
+      });
+
+      // Enable/disable train button based on model URL
+      modelUrlInput.addEventListener("change", () => {
+        trainBtn.disabled =
+          !modelUrlInput.value.trim() || selectedImages.length === 0;
+      });
+
+      // Load and use Teachable Machine model
+      trainBtn.addEventListener("click", async () => {
+        const modelUrl = modelUrlInput.value.trim();
+
+        if (!modelUrl) {
+          trainingStatus.textContent = "❌ Please enter a model URL";
+          trainingStatus.style.color = "#e74c3c";
+          return;
+        }
+
+        if (selectedImages.length === 0) {
+          trainingStatus.textContent = "❌ Please select images first";
+          trainingStatus.style.color = "#e74c3c";
+          return;
+        }
+
+        trainingStatus.textContent = "📦 Loading model...";
+        trainingStatus.style.color = "#3498db";
+        trainBtn.disabled = true;
+        resultsContainer.style.display = "none";
+
+        try {
+          // Load the model from Teachable Machine
+          const URL = modelUrl.endsWith("/") ? modelUrl : modelUrl + "/";
+          const modelURL = URL + "model.json";
+          const metadataURL = URL + "metadata.json";
+
+          model = await tmImage.load(modelURL, metadataURL);
+
+          trainingStatus.textContent = "🔍 Classifying images...";
+          resultsList.innerHTML = "";
+
+          // Classify each image
+          for (let i = 0; i < selectedImages.length; i++) {
+            const imageData = selectedImages[i];
+            const predictions = await model.predict(imageData.img);
+
+            const resultDiv = document.createElement("div");
+            resultDiv.style.cssText = `
+              margin-bottom: 20px;
+              padding: 15px;
+              background: white;
+              border-radius: 5px;
+              border-left: 4px solid #3498db;
+            `;
+
+            const title = document.createElement("h4");
+            title.textContent = imageData.name;
+            title.style.margin = "0 0 10px 0";
+            resultDiv.appendChild(title);
+
+            const predictionsDiv = document.createElement("div");
+            predictions.forEach((pred) => {
+              const predLine = document.createElement("p");
+              const confidence = (pred.probability * 100).toFixed(2);
+              predLine.textContent = `${pred.className}: ${confidence}%`;
+              predLine.style.margin = "5px 0";
+
+              // Color code based on confidence
+              let color = "#e74c3c";
+              if (confidence > 70) color = "#27ae60";
+              else if (confidence > 50) color = "#f39c12";
+
+              predLine.style.color = color;
+              predLine.style.fontWeight = "bold";
+              predictionsDiv.appendChild(predLine);
+            });
+
+            resultDiv.appendChild(predictionsDiv);
+            resultsList.appendChild(resultDiv);
+          }
+
+          trainingStatus.textContent = "✅ Classification complete!";
+          trainingStatus.style.color = "#27ae60";
+          resultsContainer.style.display = "block";
+        } catch (error) {
+          trainingStatus.textContent = `❌ Error: ${error.message}`;
+          trainingStatus.style.color = "#e74c3c";
+          console.error("Training error:", error);
+        } finally {
+          trainBtn.disabled = false;
+        }
       });
 
       // Modal for viewing full images
