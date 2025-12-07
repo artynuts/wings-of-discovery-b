@@ -253,11 +253,23 @@
           const reader = new FileReader();
 
           reader.onload = (event) => {
-            selectedImages.push({
+            const imageObj = {
               name: file.name,
               data: event.target.result,
               img: null,
-            });
+            };
+
+            const img = document.createElement("img");
+            img.src = event.target.result;
+            img.style.cssText = `
+              width: 100%;
+              height: 150px;
+              object-fit: cover;
+              display: block;
+            `;
+
+            imageObj.img = img;
+            selectedImages.push(imageObj);
 
             // Enable button once we have images
             trainBtn.disabled = false;
@@ -271,17 +283,6 @@
               transition: transform 0.2s;
               cursor: pointer;
             `;
-
-            const img = document.createElement("img");
-            img.src = event.target.result;
-            img.style.cssText = `
-              width: 100%;
-              height: 150px;
-              object-fit: cover;
-              display: block;
-            `;
-
-            selectedImages[index].img = img;
 
             const label = document.createElement("div");
             label.textContent = file.name;
@@ -349,6 +350,12 @@
           for (let i = 0; i < selectedImages.length; i++) {
             const imageData = selectedImages[i];
             const img = imageData.img;
+
+            // Skip if image is not loaded
+            if (!img || !img.src) {
+              console.warn(`Skipping image ${i}: image not properly loaded`);
+              continue;
+            }
 
             // Wait for image to load if not already loaded
             if (!img.complete) {
