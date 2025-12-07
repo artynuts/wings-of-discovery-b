@@ -170,14 +170,8 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
-    <script
-      async
-      src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"
-    ></script>
-    <script
-      async
-      src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -198,19 +192,6 @@
       // Preload model on page load
       async function preloadModel() {
         try {
-          // Wait for Teachable Machine library to load
-          let retries = 0;
-          while (typeof tmImage === "undefined" && retries < 20) {
-            await new Promise((resolve) => setTimeout(resolve, 200));
-            retries++;
-          }
-
-          if (typeof tmImage === "undefined") {
-            throw new Error(
-              "Teachable Machine library failed to load. Check your internet connection and refresh the page."
-            );
-          }
-
           modelStatus.textContent = "🔄 Initializing AI model...";
           modelStatus.style.backgroundColor = "#cce5ff";
           modelStatus.style.borderLeftColor = "#004085";
@@ -241,7 +222,9 @@
       }
 
       // Preload model when page loads
-      window.addEventListener("load", preloadModel);
+      window.addEventListener("load", () => {
+        preloadModel();
+      });
 
       // Trigger file input when button is clicked
       selectImagesBtn.addEventListener("click", () => {
