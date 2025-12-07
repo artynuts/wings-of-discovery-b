@@ -170,11 +170,14 @@
       <small>Back to <a href="index.html">Home</a></small>
     </footer>
 
-    <script src="https://www.gstatic.com/ml/tfjs/tfjs-core/4.11.0/tf-core.min.js"></script>
-    <script src="https://www.gstatic.com/ml/tfjs/tfjs-backend-webgl/4.11.0/tf-backend-webgl.min.js"></script>
-    <script src="https://www.gstatic.com/ml/tfjs/tfjs-converter/4.11.0/tf-converter.min.js"></script>
-    <script src="https://www.gstatic.com/ml/tfjs/tfjs-layers/4.11.0/tf-layers.min.js"></script>
-    <script src="https://www.gstatic.com/ml/teachablemachine/teachablemachine.min.js"></script>
+    <script
+      async
+      src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"
+    ></script>
+    <script
+      async
+      src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"
+    ></script>
 
     <script>
       const imageInput = document.getElementById("imageInput");
@@ -197,14 +200,15 @@
         try {
           // Wait for Teachable Machine library to load
           let retries = 0;
-          while (typeof tm === "undefined" || !tm.ImageClassifier) {
+          while (typeof tmImage === "undefined" && retries < 20) {
             await new Promise((resolve) => setTimeout(resolve, 200));
             retries++;
-            if (retries > 15) {
-              throw new Error(
-                "Teachable Machine library failed to load. Check your internet connection and refresh the page."
-              );
-            }
+          }
+
+          if (typeof tmImage === "undefined") {
+            throw new Error(
+              "Teachable Machine library failed to load. Check your internet connection and refresh the page."
+            );
           }
 
           modelStatus.textContent = "🔄 Initializing AI model...";
@@ -212,12 +216,14 @@
           modelStatus.style.borderLeftColor = "#004085";
           modelStatus.style.color = "#004085";
 
-          // Load the model using the correct API
+          // Load the model using tmImage.load API
           const URL = DEFAULT_MODEL_URL.endsWith("/")
             ? DEFAULT_MODEL_URL
             : DEFAULT_MODEL_URL + "/";
+          const modelURL = URL + "model.json";
+          const metadataURL = URL + "metadata.json";
 
-          model = await tm.ImageClassifier.create(URL);
+          model = await tmImage.load(modelURL, metadataURL);
 
           modelStatus.textContent =
             "✅ AI model loaded successfully! You can now analyze images.";
