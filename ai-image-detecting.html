@@ -94,7 +94,7 @@
         ></div>
 
         <h3>Use Teachable Machine Model</h3>
-        <p>Train your images with your custom Teachable Machine model:</p>
+        <p>Analyze your selected images with our Teachable Machine model:</p>
 
         <div
           style="
@@ -104,31 +104,6 @@
             border-radius: 8px;
           "
         >
-          <label
-            for="modelUrl"
-            style="display: block; margin-bottom: 10px; font-weight: bold"
-          >
-            Teachable Machine Model URL:
-          </label>
-          <input
-            type="text"
-            id="modelUrl"
-            placeholder="Paste your Teachable Machine model URL here"
-            style="
-              width: 100%;
-              padding: 10px;
-              border: 1px solid #ddd;
-              border-radius: 5px;
-              box-sizing: border-box;
-              margin-bottom: 10px;
-              font-size: 14px;
-            "
-          />
-          <small style="color: #666; display: block; margin-bottom: 15px">
-            Example:
-            https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/
-          </small>
-
           <button
             id="trainBtn"
             disabled
@@ -144,7 +119,7 @@
               margin-right: 10px;
             "
           >
-            🤖 Train Selected Images
+            🤖 Analyze Selected Images
           </button>
 
           <p id="trainingStatus" style="margin-top: 10px; color: #666"></p>
@@ -189,7 +164,6 @@
       const selectImagesBtn = document.getElementById("selectImagesBtn");
       const imageGallery = document.getElementById("imageGallery");
       const imageCount = document.getElementById("imageCount");
-      const modelUrlInput = document.getElementById("modelUrl");
       const trainBtn = document.getElementById("trainBtn");
       const trainingStatus = document.getElementById("trainingStatus");
       const resultsContainer = document.getElementById("resultsContainer");
@@ -197,6 +171,8 @@
 
       let selectedImages = [];
       let model = null;
+      const DEFAULT_MODEL_URL =
+        "https://teachablemachine.withgoogle.com/models/XUrRWk4EQ/";
 
       // Trigger file input when button is clicked
       selectImagesBtn.addEventListener("click", () => {
@@ -220,7 +196,7 @@
         } selected`;
         imageGallery.innerHTML = "";
         selectedImages = [];
-        trainBtn.disabled = !modelUrlInput.value.trim();
+        trainBtn.disabled = selectedImages.length === 0;
 
         files.forEach((file, index) => {
           const reader = new FileReader();
@@ -292,22 +268,8 @@
         });
       });
 
-      // Enable/disable train button based on model URL
-      modelUrlInput.addEventListener("change", () => {
-        trainBtn.disabled =
-          !modelUrlInput.value.trim() || selectedImages.length === 0;
-      });
-
       // Load and use Teachable Machine model
       trainBtn.addEventListener("click", async () => {
-        const modelUrl = modelUrlInput.value.trim();
-
-        if (!modelUrl) {
-          trainingStatus.textContent = "❌ Please enter a model URL";
-          trainingStatus.style.color = "#e74c3c";
-          return;
-        }
-
         if (selectedImages.length === 0) {
           trainingStatus.textContent = "❌ Please select images first";
           trainingStatus.style.color = "#e74c3c";
@@ -321,7 +283,7 @@
 
         try {
           // Load the model from Teachable Machine
-          const URL = modelUrl.endsWith("/") ? modelUrl : modelUrl + "/";
+          const URL = DEFAULT_MODEL_URL.endsWith("/") ? DEFAULT_MODEL_URL : DEFAULT_MODEL_URL + "/";
           const modelURL = URL + "model.json";
           const metadataURL = URL + "metadata.json";
 
