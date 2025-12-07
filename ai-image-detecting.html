@@ -230,6 +230,8 @@
             `;
 
             selectedImages[index].img = img;
+
+            const label = document.createElement("div");
             label.textContent = file.name;
             label.style.cssText = `
               position: absolute;
