@@ -196,7 +196,6 @@
         } selected`;
         imageGallery.innerHTML = "";
         selectedImages = [];
-        trainBtn.disabled = selectedImages.length === 0;
 
         files.forEach((file, index) => {
           const reader = new FileReader();
@@ -207,6 +206,9 @@
               data: event.target.result,
               img: null,
             });
+
+            // Enable button once we have images
+            trainBtn.disabled = false;
 
             const imageDiv = document.createElement("div");
             imageDiv.style.cssText = `
@@ -228,8 +230,6 @@
             `;
 
             selectedImages[index].img = img;
-
-            const label = document.createElement("div");
             label.textContent = file.name;
             label.style.cssText = `
               position: absolute;
@@ -295,7 +295,16 @@
           // Classify each image
           for (let i = 0; i < selectedImages.length; i++) {
             const imageData = selectedImages[i];
-            const predictions = await model.predict(imageData.img);
+            const img = imageData.img;
+            
+            // Wait for image to load if not already loaded
+            if (!img.complete) {
+              await new Promise((resolve) => {
+                img.onload = resolve;
+              });
+            }
+            
+            const predictions = await model.predict(img);
 
             const resultDiv = document.createElement("div");
             resultDiv.style.cssText = `
